@@ -119,12 +119,110 @@ service.get('/:playerName', function (req, res) {
     var giocatore = req.params.playerName
 
 
-    let ris = content.filter(p => { return p.Nome == giocatore })
+    let ris = content.filter(p => { return p.Nome === giocatore })
 
     if (ris.length > 0)
         res.status(200).end(JSON.stringify(ris));
     else
         res.status(400).end([]);
+
+});
+
+
+service.get('/players/:team/avg_age', function (req, res) {
+    const teamName = req.params.team;
+
+    fs.readFile('fifa23_.json', 'utf8', (err, data) => {
+        try {
+            const jsonData = JSON.parse(data);
+            // Filtra i giocatori per il team specifico
+            const teamPlayers = jsonData.filter(player => player.Club === teamName);
+            // Ordina i giocatori per Valore in ordine decrescente
+            teamPlayers.sort((a, b) => b.Valore - a.Valore);
+            // Prendi i primi 15 giocatori
+            const top15Players = teamPlayers.slice(0, 15);
+
+            if (top15Players.length > 0) {
+                // Calcola la media delle età dei primi 15 giocatori
+                const totalAge = top15Players.reduce((sum, player) => sum + player.Eta, 0);
+                const averageAge = totalAge / top15Players.length;
+
+                res.json({
+                    topPlayers: top15Players,
+                    averageAge: averageAge
+                });
+            } else {
+                // Se nessun giocatore è stato trovato, restituisci uno stato 404 (non trovato)
+                res.status(404).send('Nessun giocatore trovato per il team specificato');
+            }
+        } catch (parseError) {
+            console.error('Errore nella conversione del JSON:', parseError);
+            res.status(500).send('Errore interno del server');
+        }
+    });
+
+});
+
+service.get('/players/:team/avg_ovr', function (req, res) {
+    const teamName = req.params.team;
+
+    fs.readFile('fifa23_.json', 'utf8', (err, data) => {
+        try {
+            const jsonData = JSON.parse(data);
+            // Filtra i giocatori per il team specifico
+            const teamPlayers = jsonData.filter(player => player.Club === teamName);
+            // Ordina i giocatori per Valore in ordine decrescente
+            teamPlayers.sort((a, b) => b.Valore - a.Valore);
+            // Prendi i primi 15 giocatori
+            const top15Players = teamPlayers.slice(0, 15);
+
+            if (top15Players.length > 0) {
+                // Calcola la media delle età dei primi 15 giocatori
+                const totalOvr = top15Players.reduce((sum, player) => sum + player.Valore, 0);
+                const averageOvr = totalOvr / top15Players.length;
+
+                res.json({
+                    topPlayers: top15Players,
+                    averageOvr: averageOvr
+                });
+            } else {
+                // Se nessun giocatore è stato trovato, restituisci uno stato 404 (non trovato)
+                res.status(404).send('Nessun giocatore trovato per il team specificato');
+            }
+        } catch (parseError) {
+            console.error('Errore nella conversione del JSON:', parseError);
+            res.status(500).send('Errore interno del server');
+        }
+    });
+
+});
+
+service.get('/players/:nation/top_10', function (req, res) {
+    const nazione = req.params.nation;
+
+    fs.readFile('fifa23_.json', 'utf8', (err, data) => {
+        try {
+            const jsonData = JSON.parse(data);
+            // Filtra i giocatori per il team specifico
+            const nationPlayers = jsonData.filter(player => player.Nazionalita === nazione);
+            // Ordina i giocatori per Valore in ordine decrescente
+            nationPlayers.sort((a, b) => b.Valore - a.Valore);
+            // Prendi i primi 15 giocatori
+            const top10Players = nationPlayers.slice(0, 10);
+
+            if (top10Players) {
+                res.json({
+                    topPlayers: top10Players
+                });
+            } else {
+                // Se nessun giocatore è stato trovato, restituisci uno stato 404 (non trovato)
+                res.status(404).send('Nessun giocatore trovato per il team specificato');
+            }
+        } catch (parseError) {
+            console.error('Errore nella conversione del JSON:', parseError);
+            res.status(500).send('Errore interno del server');
+        }
+    });
 
 });
 
