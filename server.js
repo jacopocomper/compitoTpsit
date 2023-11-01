@@ -18,8 +18,11 @@ service.get('/players', (req, res) => {
     fs.readFile('fifa23_.json', 'utf8', (err, data) => {
         try {
             const jsonData = JSON.parse(data);
-            // Invia il JSON dal file come risposta
-            res.json(jsonData);
+            const giocatori = jsonData.map(player => player.Nome);
+            // Rimuovi le nazioni duplicate (se necessario)
+            const uniqueGiocatori = [...new Set(giocatori)];
+            // Invia le nazioni come risposta
+            res.json(uniqueGiocatori);
         } catch (parseError) {
             console.error('Errore nella conversione del JSON:', parseError);
             res.status(500).send('Errore interno del server');
@@ -41,6 +44,7 @@ service.get('/players/:team', function (req, res) {
         res.status(400).end([]);
 
 });
+
 
 service.get('/team', (req, res) => {
     fs.readFile('fifa23_.json', 'utf8', (err, data) => {
@@ -108,6 +112,22 @@ service.get('/top_gk', (req, res) => {
         }
     });
 });
+
+service.get('/:playerName', function (req, res) {
+
+    res.set({ 'content-type': 'text/html; charset=utf-8' });
+    var giocatore = req.params.playerName
+
+
+    let ris = content.filter(p => { return p.Nome == giocatore })
+
+    if (ris.length > 0)
+        res.status(200).end(JSON.stringify(ris));
+    else
+        res.status(400).end([]);
+
+});
+
 
 
 
